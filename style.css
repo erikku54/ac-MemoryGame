@@ -4,7 +4,7 @@
 }
 
 #header {
-    padding:20px 10px 10px 0;
+    padding:20px 3vh 10px 0;
     background-color: lightyellow;
 }
 
@@ -13,21 +13,28 @@
     text-align: end;
 }
 
-#title *{
+.title *{
     vertical-align: middle;
     font-size: 16pt;
     font-weight: 700;
 }
 
-
-#scoreboard{
+.scoreboard{
     font-size: 16pt;
     font-weight: 700;
     color: grey;
 }
 
+.timesboard{
+    font-size: 16pt;
+    font-weight: 500;
+}
+
+
+
 #cards{
-    padding: 3vh 0;
+
+    padding: 3vh 3vh;
     background-color: aqua;
 
     display: flex;
@@ -40,7 +47,7 @@
     border:2px solid black;
     background-color: #eee;
 
-    flex: 0 1 7%;
+    flex: 1 1 7%;
     height: 8vw;
 }
 
@@ -73,4 +80,36 @@
 
 .card-paired{
     background-color: #dae0e3;
+}
+
+.card-wrong{
+    animation-name: wrongAnimation;
+    animation-duration: 0.2s;
+    animation-iteration-count: 5;
+}
+
+@keyframes wrongAnimation {
+    to {
+        border: 2px solid #ffd54f;
+    }
+}
+
+.completed {
+    position: absolute;
+    width: 100vw;
+    height: 10vh;
+    margin-top: 30vh;
+    padding-top: 1.5vh;
+
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    background-color: rgba(230, 230, 0, 0.5);
+}
+
+.completed > p:first-child{
+
+    font-size: 24px;
+    font-weight: bold;
+    color:darkblue;
 }

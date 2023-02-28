@@ -22,29 +22,31 @@ const View = (() => {
         return em;
     }
 
-    function flipCard (em) {
+    function flipCard (...ems) {
 
-        if(em.matches('.card-back-side')){
+        for (let em of ems) {
 
-            const index=em.dataset.index;
-            const num=1+index%13;
-            const symbol=Symbols[Math.floor(index/13)];            
+            if(em.matches('.card-back-side')){
 
-            em.classList.remove('card-back-side');
-            em.classList.add('card-front-side');
-
-            em.innerHTML=`<p>${transformNumber(num)}</p>
-            <img src="${symbol}" alt="">
-            <p>${transformNumber(num)}</p>`;
-
-        }else{
-
-            em.classList.remove('card-front-side');
-            em.classList.add('card-back-side');
-
-            em.innerHTML='';
+                const index=em.dataset.index;
+                const num=1+index%13;
+                const symbol=Symbols[Math.floor(index/13)];            
+    
+                em.classList.remove('card-back-side');
+                em.classList.add('card-front-side');
+    
+                em.innerHTML=`<p>${transformNumber(num)}</p>
+                <img src="${symbol}" alt="">
+                <p>${transformNumber(num)}</p>`;
+    
+            }else{
+    
+                em.classList.remove('card-front-side');
+                em.classList.add('card-back-side');
+    
+                em.innerHTML='';
+            }
         }
-
     }
 
     function transformNumber (number) {
@@ -64,9 +66,41 @@ const View = (() => {
         }
     }
 
-    function pairCard (card) {
+    function pairCard (...cards) {
 
-        card.classList.add('paired');
+        cards.forEach((card)=>card.classList.add('card-paired'));
+    }
+
+    function appendWrongAnimation (...cards) {
+
+        cards.forEach((card) => {
+            card.classList.add('card-wrong');
+            card.addEventListener('animationend', (event) => {
+                event.target.classList.remove('card-wrong');
+            }, {once: true})
+        })
+    }
+
+    function renderScore(score){
+
+        document.querySelector('.scoreboard').textContent = `Score: ${score}`; 
+    }
+
+    function renderTriedTimes(times){
+
+        document.querySelector('.timesboard').textContent = `You've tried: ${times} times `; 
+    }
+
+    function showGameFinished () {
+
+        const div = document.createElement('div');
+        div.classList.add('completed');
+
+        div.innerHTML=`<p>Game Complete!</p>
+        <p>score: ${Model.score}</p>
+        <p>You've tried: ${Model.triedTimes} times</p>`
+
+        document.querySelector('#header').before(div);
     }
 
     function displayCards (arr) {
@@ -77,27 +111,29 @@ const View = (() => {
         })
     }
 
-    return {displayCards, flipCard, pairCard};
+    return {displayCards, flipCard, pairCard, appendWrongAnimation, renderScore, renderTriedTimes, showGameFinished};
 })();
 
 const Model = (() => {
 
-    const revealedCards = [];
+    // const revealedCards = [];
+    // const score=0;
+    // const triedTimes=0;
 
     function isRevealedCardsMatched() {
 
-        //此函式中的'this'絕對不可省略, 取到的是回傳物件的property('revealedCards'),不是model中的variable('revealedCards');
+        //此函式中的'this'絕對不可省略, 取到的是回傳物件的property('revealedCards'),不是Model中的variable('revealedCards');
         if (this.revealedCards.length !== 2) {
             return false;
         }
 
-        console.log(this.revealedCards[0], this.revealedCards[1]);
+        // console.log(this.revealedCards[0], this.revealedCards[1]);
 
         return (this.revealedCards[0].dataset.index % 13 === 
             this.revealedCards[1].dataset.index % 13);
     }
 
-    return {revealedCards, isRevealedCardsMatched}
+    return {revealedCards: [], score: 0, triedTimes: 0, isRevealedCardsMatched}
 
 })();
 
@@ -131,44 +167,50 @@ const Controller = (() => {
                 Model.revealedCards.push(card);
                 currentState = GAME_STATE.SecondCardAwaits;
 
-
                 break;
             case GAME_STATE.SecondCardAwaits:
                 View.flipCard(card);
                 Model.revealedCards.push(card);
-
-                // console.log('Check:', Model.isRevealedCardsMatched());
-                // console.log('Real:', Model.revealedCards);
+                Model.triedTimes += 1;
+                View.renderTriedTimes(Model.triedTimes);
 
                 if (Model.isRevealedCardsMatched()) {
                     currentState = GAME_STATE.CardMatched;
 
-                    View.pairCard(Model.revealedCards[0]);
-                    View.pairCard(Model.revealedCards[1]);
+                    View.pairCard(...Model.revealedCards);
 
                     Model.revealedCards = [];
+                    Model.score +=10;
+                    View.renderScore(Model.score);
+
+                    if (Model.score === 260) {
+
+                        currentState = GAME_STATE.GameFinished;
+                        View.showGameFinished();
+                        return;
+                    } 
+
                     currentState = GAME_STATE.FirstCardAwaits;
 
                 } else {
                     currentState = GAME_STATE.CardsMatchFailed;
 
-                    setTimeout(() => {
-                        View.flipCard(Model.revealedCards[0]);
-                        View.flipCard(Model.revealedCards[1]);
-                        
-                        Model.revealedCards = [];
-                        currentState = GAME_STATE.FirstCardAwaits;
-
-                    }, 1000)
+                    View.appendWrongAnimation(...Model.revealedCards);
+                    setTimeout(resetCards, 1000);
                 }
-            
+                
                 break;
             default:
                 break;
         }
     }
 
-
+    function resetCards () {
+        View.flipCard(...Model.revealedCards);
+                        
+        Model.revealedCards = [];
+        currentState = GAME_STATE.FirstCardAwaits;
+    }
 
     return {generateCards, dispatchCardAction};
 
