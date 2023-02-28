@@ -70,3 +70,7 @@
     background-image: url(resources/ExportedContentImage_00.png);
     background-size: contain;
 }
+
+.card-paired{
+    background-color: #dae0e3;
+}
