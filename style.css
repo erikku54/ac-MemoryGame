@@ -74,7 +74,7 @@
 
 .card-back-side{
 
-    background-image: url(resources/ExportedContentImage_00.png);
+    background-image: url('resources/ExportedContentImage_00.png');
     background-size: contain;
 }
 
@@ -97,7 +97,7 @@
 .completed {
     position: absolute;
     width: 100vw;
-    height: 10vh;
+    height: 90px;
     margin-top: 30vh;
     padding-top: 1.5vh;
 
